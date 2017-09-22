@@ -8,6 +8,9 @@ D. Eppstein.
 Inf. Proc. Lett. 51: 207-211, 1994.
 http://doi.org/10.1016/0020-0190(94)90121-X
 
+The running time is linear in the number of vertices of the graph
+but exponential in its degeneracy.
+
 D. Eppstein, September 2017."""
 
 from GraphDegeneracy import degeneracyOrientation
@@ -41,13 +44,13 @@ def Bicliques(G):
                 if adjacentToAll(w,F):
                     B[F].add(w)
 
-    for F in list(B):
-        G = B[F] = frozenset(B[F])
+    for F in list(B):               # add backlinks from subsets to subsets
+        G = B[F] = frozenset(B[F])  # but only to the biggest ones
         if G not in B or len(B[G]) < len(F):
             B[G] = F
 
-    output = set()
-    for F in B:
+    output = set()                  # keep track of what we already output
+    for F in B:                     # so we only list one of (F,G) and (G,F)
         G = B[F]
         if len(F) > 1 and len(G) > 1 and (G,F) not in output:
             yield F,G
