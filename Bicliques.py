@@ -11,20 +11,8 @@ http://doi.org/10.1016/0020-0190(94)90121-X
 D. Eppstein, September 2017."""
 
 from GraphDegeneracy import degeneracyOrientation
+from Subsets import subsets
 import unittest
-
-def subsets(S):
-    S = iter(S)
-    try:
-        x = S.next()
-    except StopIteration:
-        yield set()
-        return
-    for T in subsets(S):
-        yield T
-        T.add(x)
-        yield T
-        T.remove(x)
 
 def Bicliques(G):
     D = degeneracyOrientation(G)
