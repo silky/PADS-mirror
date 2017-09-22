@@ -1,4 +1,4 @@
-"""Bicliques.py
+"""Subsets.py
 
 List all subsets of a given sequence
 
