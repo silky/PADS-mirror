@@ -22,11 +22,12 @@ def Bicliques(G):
     B = {}
     for v in G:
         for N in subsets(D[v]):     # all subsets of outgoing neighbors
-            F = frozenset(N)
-            if F not in B:
-                B[F] = {v}
-            else:
-                B[F].add(v)
+            if len(N) > 1:          # of big enough size to be interesting
+                F = frozenset(N)
+                if F not in B:
+                    B[F] = {v}
+                else:
+                    B[F].add(v)
 
     def adjacent(v,w):
         return v in D[w] or w in D[v]
@@ -39,10 +40,12 @@ def Bicliques(G):
 
     for F in B:                     # found incoming neighbors, now need outgoing
         if len(F) > 0:              # ignore empty and single-vertex sets
-            v = iter(F).next()      # pick a vertex
-            for w in D[v]:          # try outgoing neighbors
-                if adjacentToAll(w,F):
-                    B[F].add(w)
+            done = set()
+            for v in F:             # pick a vertex
+                for w in D[v]:      # try outgoing neighbors
+                    if w not in done and adjacentToAll(w,F):
+                        B[F].add(w)
+                done.add(w)
 
     for F in list(B):               # add backlinks from subsets to subsets
         G = B[F] = frozenset(B[F])  # but only to the biggest ones
@@ -72,6 +75,21 @@ class BicliqueTest(unittest.TestCase):
         self.assertEqual(len(L),10)
         for F,G in L:
             self.assertEqual(frozenset((len(F),len(G))),frozenset((2,3)))
+
+    def testGrid(self):
+        G = {}
+        for i in range(5):
+            for j in range(5):
+                G[i,j] = []
+                if i < 4: G[i,j].append((i+1,j))
+                if i > 0: G[i,j].append((i-1,j))
+                if j < 4: G[i,j].append((i,j+1))
+                if j > 0: G[i,j].append((i,j-1))
+        L = list(Bicliques(G))
+        self.assertEqual(len(L),16)
+        for F,G in L:
+            self.assertEqual(len(F),2)
+            self.assertEqual(len(G),2)
 
 if __name__ == "__main__":
     unittest.main()   
