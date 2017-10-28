@@ -1,8 +1,8 @@
 """IntegerPoints.py
 
 Space-efficient streaming algorithms to generate all integer points (x,y)
-of the Euclidean plane, in order by distance from the origin,
-as described at http://11011110.livejournal.com/332116.html
+of the Euclidean plane, in order by distance from the origin, as described at
+https://11011110.github.io/blog/2016/07/03/streaming-integer-points.html
 
 D. Eppstein, July 2016.
 """
