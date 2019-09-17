@@ -1,8 +1,6 @@
 """IntegerHeap.py
 
 Priority queues of integer keys based on van Emde Boas trees.
-Only the keys are stored; caller is responsible for keeping
-track of any data associated with the keys in a separate dictionary.
 
 We use a version of vEB trees in which all accesses to subtrees
 are performed indirectly through a hash table and the data structures
@@ -13,6 +11,13 @@ the O(log log U) time per operation of vEB trees. For better performance,
 we switch to bitvectors for sufficiently small integer sizes.
 
 Usage:
+    Q - IntegerPriorityQueue(i): Priority queue for 2^i-bit integers
+
+Q can be used like a dictionary, with the additional method self.min()
+that returns a key with minimum value.
+
+We also provide related structures that store only the values (not the keys):
+
     Q = BitVectorHeap() # Bit-vector based heap for integers
     Q = FlatHeap(i)     # Flat heap for 2^i-bit integers
     Q = LinearHeap()    # Set-based heap with linear-time min operation
@@ -22,15 +27,52 @@ Usage:
     Q.min()             # Return the minimum value in the heap
     if Q                # True if Q is nonempty, false if empty
 
-Because the min operation in LinearHeap is a Python primitive rather than
-a sequence of interpreted Python instructions, it is actually quite fast;
-testing indicates that, for 32-bit keys, FlatHeap(5) beats LinearHeap only
-for heaps of 250 or more items. This breakeven point would likely be
-different for different numbers of bits per word or when runtime optimizers
-such as psyco are in use.
-
-D. Eppstein, January 2010
+D. Eppstein, January 2010, significantly updated September 2019
 """
+
+class IntegerPriorityQueue:
+    """Like a dictionary with a min() method"""
+    def __init__(self, i):
+        self._D = dict()            # keys -> values
+        self._L = dict()            # values -> sets of keys
+        self._Q = IntegerHeap(i)    # queue of values w/nonempty lists
+
+    def __getitem__(self, key):
+        return self._D[key]
+
+    def __contains__(self, key):
+        return key in self._D
+
+    def __len__(self):
+        return len(self._D)
+
+    def __delitem__(self, key):
+        prio = self._D[key]
+        del self._D[key]
+        self._L[prio].remove(key)
+        if not self._L[prio]:
+            del self._L[prio]
+            self._Q.remove(prio)
+
+    def __setitem__(self, key, prio):
+        if key in self._D:
+            del self[key]
+        self._D[key] = prio
+        if prio in self._L:
+            self._L[prio].add(key)
+        else:
+            self._L[prio] = set([key])
+            self._Q.add(prio)
+
+    def min(self):
+        for key in self._L[self._Q.min()]:
+            return key
+
+
+# ======================================================================
+#   IntegerHeap
+# ======================================================================
+
 
 def IntegerHeap(i):
     """Return an integer heap for 2^i-bit integers.
